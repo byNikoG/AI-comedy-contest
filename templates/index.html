@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Comedy Contest</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2 { color: #333; }
+        .round { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; }
+        .joke { margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <h1>AI Comedy Contest</h1>
+    
+    <div class="intro">
+        <h2>Host Introduction</h2>
+        <p>{{ intro }}</p>
+    </div>
+
+    {% for round in rounds %}
+        <div class="round">
+            <h2>Round Theme: {{ round.theme }}</h2>
+            {% for joke in round.jokes %}
+                <div class="joke">
+                    <h3>{{ joke.contestant }}</h3>
+                    <p>{{ joke.joke }}</p>
+                    <p><strong>Judge's Verdict:</strong> {{ joke.judgment }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <div class="outro">
+        <h2>Contest Results</h2>
+        <p>{{ outro }}</p>
+    </div>
+</body>
+</html>
