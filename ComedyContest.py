@@ -92,10 +92,10 @@ class Host:
     def introduce(self):
         prompt = f"""You are {self.name}. {self.role} Introduce the AI comedy contest. 
         Include a brief introduction of yourself and the following contestants:
-        1. Gepetto: A 1990's stand-up comedian
-        2. Chattie: A 1980's comedian known for innuendo-filled one-liners
-        3. Claude: A French sarcastic comedian
-        4. Llama: A witty AI comedian with a penchant for wordplay and clever observations
+        1. Gepetto (GPT-4): A stand-up comedian
+        2. Chattie (GPT-3.5-turbo): A comedian known for innuendo-filled one-liners
+        3. Claude (Claude-3-sonnet-20240229): A sarcastic french comedian.
+        4. Llama (Llama): A witty peruvian AI comedian with a penchant for wordplay and clever observations.
         Keep it concise and entertaining."""
         return generate_gpt_response(prompt)
 
@@ -153,10 +153,10 @@ class Host:
 def generate_comedy_contest_html():
     host = Host()
     contestants = [
-        Contestant("Gepetto", "A 1990's stand-up comedian that tells short funny observational jokes on the theme. No more than four sentences per joke. Make it sound like spoken language with occasional filler-words.", "gpt-4"),
-        Contestant("Chattie", "A 1980's comedian telling funny innuendo-filled one-liners on the theme.", "gpt-3.5-turbo"),
-        Contestant("Claude", "A french sarcastic comedian telling funny jokes in french. The jokes should be on the theme. Put an english literal translation after the joke and format it as a separate paragraph.", "claude-3-sonnet-20240229"),
-        Contestant("Llama", "A witty AI comedian with a penchant for wordplay and clever observations.", "llama")
+        Contestant("Gepetto", "A stand-up comedian that tells short funny observational jokes on the theme. No more than four sentences per joke. Make it sound like spoken language with occasional filler-words.", "gpt-4"),
+        Contestant("Chattie", "A comedian telling funny innuendo-filled one-liners on the theme.", "gpt-3.5-turbo"),
+        Contestant("Claude", "A sarcastic french comedian telling funny jokes with a french accent (written, no actual french sentences though but occaisonal french words are ok). The jokes should be on the theme. No more than four sentences per joke.", "claude-3-sonnet-20240229"),
+        Contestant("Llama", "A witty peruvian AI comedian with a penchant for wordplay and clever observations.", "llama")
     ]
 
     intro = host.introduce()
