@@ -98,8 +98,10 @@ class Host:
         Include a brief introduction of yourself and the following contestants:
         1. Gepetto (GPT-4): A stand-up comedian
         2. Chattie (GPT-3.5-turbo): A comedian known for innuendo-filled one-liners
-        3. Claude (Claude-3-sonnet-20240229): A sarcastic french comedian.
+        3. Claude (Claude-Sonnet): A sarcastic french comedian.
         4. Llama (Llama): A witty peruvian AI comedian with a penchant for wordplay and clever observations.
+
+        Format your response so that the introduction of each contestant starts on a new line.
         Keep it concise and entertaining."""
         return generate_gpt_response(prompt)
 
@@ -153,10 +155,10 @@ class Host:
 def generate_comedy_contest_html():
     host = Host()
     contestants = [
-        Contestant("Gepetto", "A stand-up comedian that tells short funny observational jokes on the theme. No more than four sentences per joke. Make it sound like spoken language with occasional filler-words.", "gpt-4"),
-        Contestant("Chattie", "A comedian telling funny innuendo-filled one-liners on the theme.", "gpt-3.5-turbo"),
-        Contestant("Claude", "A sarcastic french comedian telling funny jokes with a french accent (written, no actual french sentences though but occaisonal french words are ok). The jokes should be on the theme. No more than four sentences per joke.", "claude-3-sonnet-20240229"),
-        Contestant("Llama", "A witty peruvian AI comedian with a penchant for wordplay and clever observations.", "llama")
+        Contestant("Gepetto (GPT-4o)", "A stand-up comedian that tells short funny observational jokes on the theme. No more than four sentences per joke. Make it sound like spoken language with occasional filler-words.", "gpt-4o"),
+        Contestant("Chattie (GPT-3.5-turbo)", "A comedian telling funny innuendo-filled one-liners on the theme.", "gpt-3.5-turbo"),
+        Contestant("Claude (Claude-3-sonnet)", "A sarcastic french comedian telling funny jokes with a french accent (written, no actual french sentences though but occaisonal french words are ok, don't describe Claude's action, or emotions, just tell the joke). The joke should be on the theme. ABSOLUTELY no more than three sentences.", "claude-3-sonnet-20240229"),
+        Contestant("Llama", "A witty peruvian AI comedian with a penchant for wordplay and clever observations (don't include descriptions, directions, emotions, or actions taken by Llama, just the joke.).", "llama")
     ]
 
     intro = host.introduce()
@@ -173,7 +175,7 @@ def generate_comedy_contest_html():
             body {{ font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }}
             h1, h2, h3 {{ color: #333; }}
             .joke {{ background-color: #f0f0f0; padding: 10px; margin-bottom: 10px; border-radius: 5px; }}
-            .host {{ font-style: italic; color: #0066cc; }}
+            .host {{ font-style: italic; color: #0066cc; white-space: pre-line; }}
             .host-name {{ font-weight: bold; color: #0066cc; }}
             .scores {{ margin-bottom: 10px; }}
             .scores p {{ margin: 5px 0; }}
