@@ -1,4 +1,5 @@
 import os
+import re
 import random
 import webbrowser
 import difflib
@@ -84,6 +85,9 @@ class Contestant:
             return generate_llama_response(prompt)
 
 class Host:
+    SIMILARITY_THRESHOLD = 0.6
+    MAX_THEME_ATTEMPTS = 5
+
     def __init__(self):
         self.name = "AIexA Trebek"
         self.role = "A 1980's game show host with zingy one-liners."
@@ -99,19 +103,16 @@ class Host:
         Keep it concise and entertaining."""
         return generate_gpt_response(prompt)
 
-    def select_theme(self):
-        max_attempts = 5
-        similarity_threshold = 0.6
-
-        for _ in range(max_attempts):
+    def select_theme(self) -> str:
+        for _ in range(self.MAX_THEME_ATTEMPTS):
             prompt = f"You are {self.name}. {self.role} Suggest a random theme for a comedy contest joke. Be creative and diverse. Respond with just the theme, one to three words maximum."
             theme = generate_gpt_response(prompt).lower()
 
-            if not any(difflib.SequenceMatcher(None, theme, used_theme).ratio() > similarity_threshold for used_theme in self.used_themes):
+            if not any(difflib.SequenceMatcher(None, theme, used_theme).ratio() > self.SIMILARITY_THRESHOLD for used_theme in self.used_themes):
                 self.used_themes.append(theme)
                 return theme.capitalize()
 
-        return theme.capitalize()
+        return random.choice(self.used_themes).capitalize()
 
     def judge_joke(self, joke, theme):
         prompt = f"""You are {self.name}. {self.role} Judge this joke on the theme '{theme}' using the following criteria:
@@ -134,7 +135,6 @@ class Host:
         judgment = generate_gpt_response(prompt)
         
         # Extract scores and comment from judgment
-        import re
         scores = {}
         for category in ['Overall', 'Humor', 'Relevance', 'Creativity']:
             match = re.search(rf'{category}: (\d+)', judgment)
