@@ -4,10 +4,68 @@ import webbrowser
 import difflib
 from anthropic import Anthropic
 from openai import OpenAI
+from huggingface_hub import InferenceClient
 
 # Initialize API clients (you'll need to set up your API keys)
-anthropic = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+client_anthropic = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+client_gpt = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+client_llama = InferenceClient(token=os.environ.get("HUGGINGFACE_TOKEN"))
+
+def generate_gpt_response(prompt, model="gpt-4", max_tokens=300):
+    try:
+        response = client_gpt.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error generating GPT response: {str(e)}"
+
+def generate_claude_response(prompt, model="claude-3-sonnet-20240229", max_tokens=300):
+    try:
+        messages = [
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+        response = client_anthropic.messages.create(
+            model=model,
+            max_tokens=max_tokens,
+            messages=messages
+        )
+        if response.content:
+            return response.content[0].text.strip()
+        else:
+            return "Claude couldn't generate a response."
+    except Exception as e:
+        return f"Error generating Claude response: {str(e)}"
+
+def generate_llama_response(prompt, max_length=100):
+    try:
+        response = client_llama.text_generation(
+            prompt,
+            model="meta-llama/Llama-2-7b-chat-hf",
+            max_new_tokens=max_length,
+            temperature=0.7,
+            top_k=50,
+            top_p=0.95,
+        )
+        
+        if not response:
+            return "Llama couldn't generate a joke."
+        
+        if isinstance(response, str):
+            return response.strip()
+        
+        if hasattr(response, 'generated_text'):
+            return response.generated_text.strip()
+        
+        return "Error: Unexpected response format from Llama."
+    
+    except Exception as e:
+        return f"Error generating Llama response: {str(e)}"
 
 class Contestant:
     def __init__(self, name, role, model):
@@ -18,28 +76,12 @@ class Contestant:
 
     def tell_joke(self, theme):
         prompt = f"You are {self.name}. {self.role} Tell a joke about {theme}."
-        if self.model == "claude-3-sonnet":
-            messages = [
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
-            response = anthropic.messages.create(
-                model="claude-3-sonnet-20240229",
-                max_tokens=300,
-                messages=messages
-            )
-            if response.content:
-                return response.content[0].text.strip()
-            else:
-                return "Claude couldn't generate a joke."
+        if self.model.startswith("claude"):
+            return generate_claude_response(prompt, self.model)
         elif self.model.startswith("gpt"):
-            response = client.chat.completions.create(
-                model=self.model,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            return response.choices[0].message.content.strip()
+            return generate_gpt_response(prompt, self.model)
+        elif self.model == "llama":
+            return generate_llama_response(prompt)
 
 class Host:
     def __init__(self):
@@ -48,18 +90,14 @@ class Host:
         self.used_themes = []
 
     def introduce(self):
-        prompt = f"""You are {self.name}. {self.role} Briefly introduce the AI comedy contest. 
+        prompt = f"""You are {self.name}. {self.role} Introduce the AI comedy contest. 
         Include a brief introduction of yourself and the following contestants:
-        1. Gepetto (GPT-4): A 1990's stand-up comedian
-        2. Chattie (GPT-3.5-turbo): A 1980's comedian known for innuendo-filled one-liners
+        1. Gepetto: A 1990's stand-up comedian
+        2. Chattie: A 1980's comedian known for innuendo-filled one-liners
         3. Claude: A French sarcastic comedian
-        Keep it short, concise and entertaining."""
-        
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content
+        4. Llama: A witty AI comedian with a penchant for wordplay and clever observations
+        Keep it concise and entertaining."""
+        return generate_gpt_response(prompt)
 
     def select_theme(self):
         max_attempts = 5
@@ -67,18 +105,12 @@ class Host:
 
         for _ in range(max_attempts):
             prompt = f"You are {self.name}. {self.role} Suggest a random theme for a comedy contest joke. Be creative and diverse. Respond with just the theme, one to three words maximum."
-            response = client.chat.completions.create(
-                model="gpt-4",
-                messages=[{"role": "user", "content": prompt}]
-            )
-            theme = response.choices[0].message.content.strip().lower()
+            theme = generate_gpt_response(prompt).lower()
 
-            # Check similarity with previous themes
             if not any(difflib.SequenceMatcher(None, theme, used_theme).ratio() > similarity_threshold for used_theme in self.used_themes):
                 self.used_themes.append(theme)
                 return theme.capitalize()
 
-        # If we couldn't get a unique theme after max_attempts, use the last generated one
         return theme.capitalize()
 
     def judge_joke(self, joke, theme):
@@ -99,11 +131,7 @@ class Host:
         Creativity: [score]
         Comment: [Your brief comment]
         """
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        judgment = response.choices[0].message.content.strip()
+        judgment = generate_gpt_response(prompt)
         
         # Extract scores and comment from judgment
         import re
@@ -120,18 +148,15 @@ class Host:
     def declare_winner(self, contestants):
         winner = max(contestants, key=lambda x: x.score)
         prompt = f"You are {self.name}. {self.role} Declare {winner.name} as the winner of the comedy contest and give a short outro."
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content.strip()
+        return generate_gpt_response(prompt)
 
 def generate_comedy_contest_html():
     host = Host()
     contestants = [
         Contestant("Gepetto", "A 1990's stand-up comedian that tells short funny observational jokes on the theme. No more than four sentences per joke. Make it sound like spoken language with occasional filler-words.", "gpt-4"),
         Contestant("Chattie", "A 1980's comedian telling funny innuendo-filled one-liners on the theme.", "gpt-3.5-turbo"),
-        Contestant("Claude", "A french sarcastic comedian telling funny jokes on the theme in french. Start a new paragraph and put an english literal translation of the joke and format it as a separate paragraph.", "claude-3-sonnet")
+        Contestant("Claude", "A french sarcastic comedian telling funny jokes in french. The jokes should be on the theme. Put an english literal translation after the joke and format it as a separate paragraph.", "claude-3-sonnet-20240229"),
+        Contestant("Llama", "A witty AI comedian with a penchant for wordplay and clever observations.", "llama")
     ]
 
     intro = host.introduce()
