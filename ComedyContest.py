@@ -12,7 +12,7 @@ client_anthropic = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 client_gpt = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 client_llama = InferenceClient(token=os.environ.get("HUGGINGFACE_TOKEN"))
 
-def generate_gpt_response(prompt, model="gpt-4", max_tokens=300):
+def generate_gpt_response(prompt, model="gpt-4-turbo-preview", max_tokens=300):
     try:
         response = client_gpt.chat.completions.create(
             model=model,
@@ -23,7 +23,7 @@ def generate_gpt_response(prompt, model="gpt-4", max_tokens=300):
     except Exception as e:
         return f"Error generating GPT response: {str(e)}"
 
-def generate_claude_response(prompt, model="claude-3-sonnet-20240229", max_tokens=300):
+def generate_claude_response(prompt, model="claude-3-opus-20240229", max_tokens=300):
     try:
         messages = [
             {
@@ -99,7 +99,7 @@ class Host:
         1. Gepetto (GPT-4): A stand-up comedian
         2. Chattie (GPT-3.5-turbo): A comedian known for innuendo-filled one-liners
         3. Claude (Claude-Sonnet): A sarcastic french comedian.
-        4. Llama (Llama): A witty peruvian AI comedian with a penchant for wordplay and clever observations.
+        4. Llama (Llama-2-7b-chat-hf): A witty peruvian AI comedian with a penchant for wordplay and clever observations.
 
         Format your response so that the introduction of each contestant starts on a new line.
         Keep it concise and entertaining."""
@@ -155,12 +155,12 @@ class Host:
 def generate_comedy_contest_html():
     host = Host()
     contestants = [
-        Contestant("Gepetto (GPT-4o)", "A stand-up comedian that tells short funny observational jokes on the theme. No more than four sentences per joke. Make it sound like spoken language with occasional filler-words.", "gpt-4o"),
+        Contestant("Gepetto (GPT-4-Turbo)", "A stand-up comedian that tells short funny observational jokes on the theme. No more than four sentences per joke. Make it sound like spoken language with occasional filler-words.", "gpt-4-turbo-preview"),
         Contestant("Chattie (GPT-3.5-turbo)", "A comedian telling funny innuendo-filled one-liners on the theme.", "gpt-3.5-turbo"),
-        Contestant("Claude (Claude-3-sonnet)", "A sarcastic french comedian telling funny jokes with a french accent (written, no actual french sentences though but occaisonal french words are ok, don't describe Claude's action, or emotions, just tell the joke). The joke should be on the theme. ABSOLUTELY no more than three sentences.", "claude-3-sonnet-20240229"),
-        Contestant("Llama", "A witty peruvian AI comedian with a penchant for wordplay and clever observations (don't include descriptions, directions, emotions, or actions taken by Llama, just the joke.).", "llama")
+        Contestant("Claude (Claude-3-Opus)", "A sarcastic french comedian telling funny jokes with a french accent (written, no actual french sentences though but occasional french words are ok, don't describe Claude's action, or emotions, just tell the joke). The joke should be on the theme. ABSOLUTELY no more than three sentences.", "claude-3-opus-20240229"),
+        Contestant("Llama (meta-llama/Llama-2-7b-chat-hf)", "A witty peruvian AI comedian with a penchant for wordplay and clever observations (don't include descriptions, directions, emotions, or actions taken by Llama, just the joke.).", "llama")
     ]
-
+    
     intro = host.introduce()
     rounds = []
 
